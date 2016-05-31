@@ -1,0 +1,6 @@
+# pg_hook_lua
+default_version = '0.1'
+comment = 'LuaJIT hook'
+module_pathname = '$libdir/pg_hook_lua'
+relocatable = false
+schema = pg_catalog
