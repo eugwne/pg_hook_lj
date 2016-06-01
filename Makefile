@@ -9,6 +9,9 @@ MODULES = pg_hook_lua
 MODULE_big = pg_hook_lua
 EXTENSION = pg_hook_lua
 
+REGRESS = \
+pglj_hook_test 
+
 
 OBJS = \
 pg_hook_lua.o 

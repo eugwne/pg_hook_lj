@@ -31,6 +31,11 @@ log = function(text)
   ffi.C.errfinish(ffi.C.errmsg(tostring(text)))
 end
 
+pgerror = function(text)
+  ffi.C.errstart(pgdef.elog["ERROR"], "", 0, nil, nil)
+  ffi.C.errfinish(ffi.C.errmsg(tostring(text)))
+end
+
 ffi.cdef[[
 typedef uintptr_t Datum;
 
@@ -41,7 +46,10 @@ check_password_hook_type check_password_hook;
 
 local check_password_old = ffi.C.check_password_hook
 local check_password = function(username, password, password_type, validuntil_time, validuntil_null)
-  log("check pass for user = "..ffi.string(username))
+  if (#ffi.string(password) < 5) then
+    pgerror('password is too short')
+  end
+  
 end
 
 check_password = ffi.cast("check_password_hook_type", check_password)
@@ -54,11 +62,12 @@ ClientAuthentication_hook_type ClientAuthentication_hook;
 ]]
 local ClientAuthentication_old = ffi.C.ClientAuthentication_hook
 
+ffi.cdef[[int getpid(void);]]
+
 local ClientAuthentication = function(port, value)
-  log("ClientAuthentication hook test start")
+  log("ClientAuthentication hook test start for pid = "..tostring(ffi.C.getpid()))
   if (ClientAuthentication_old ~= NULL) then
-    log("ClientAuthentication_old p = "..tostring(ClientAuthentication_old))
-    ClientAuthentication_old(ffi.cast("Port*", port), ffi.cast("int",value))
+    ClientAuthentication_old(port, value)
   end
   
   log("ClientAuthentication hook test end")
@@ -67,10 +76,7 @@ ClientAuthentication = ffi.cast("ClientAuthentication_hook_type", ClientAuthenti
 
 
 function pglj_hook._PG_init (...)
-  log("p1= "..tostring(ffi.C.check_password_hook))
   ffi.C.check_password_hook = check_password
-  log("p2= "..tostring(ffi.C.check_password_hook))
-  
   ffi.C.ClientAuthentication_hook = ClientAuthentication
   log("pglj_hook init")
 end

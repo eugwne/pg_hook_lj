@@ -1,0 +1,10 @@
+show shared_preload_libraries;
+ shared_preload_libraries 
+--------------------------
+ pg_hook_lua
+(1 row)
+
+create user badpass with password 'bad';
+ERROR:  password is too short
+create user badpass with password 'better';
+drop user badpass;
